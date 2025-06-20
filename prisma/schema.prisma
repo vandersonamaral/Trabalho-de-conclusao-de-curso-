@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ALUNO
+  MOTORISTA
+  SUPERVISOR
+}
+
+enum StatusCadastro {
+  PENDENTE
+  APROVADO
+  REJEITADO
+}
+
+enum DiaSemana {
+  SEGUNDA
+  TERCA
+  QUARTA
+  QUINTA
+  SEXTA
+  SABADO
+  DOMINGO
+}
+
+enum StatusReserva {
+  PENDENTE
+  APROVADA
+  REJEITADA
+  CANCELADA
+  EMBARCADO
+}
+
+enum StatusViagem {
+  PENDENTE
+  INICIADA
+  FINALIZADA
+  CANCELADA
+}
+
+model User {
+  id                      Int               @id @default(autoincrement())
+  nome                    String
+  email                   String            @unique
+  senha                   String
+  role                    Role              @default(ALUNO)
+  statusCadastro          StatusCadastro    @default(PENDENTE)
+  matricula               String? // Apenas alunos
+  cpf                     String? // Apenas alunos
+  rg                      String? // Apenas alunos
+  telefone                String? // Aluno ou motorista
+  comprovanteMatriculaUrl String? // Aluno envia
+  motorista               Motorista?
+  supervisor              Supervisor?
+  diasSolicitados         DiasSolicitados[]
+  reservas                Reserva[]
+
+  @@map("users")
+}
+
+model Motorista {
+  userId   Int       @id
+  cnh      String
+  telefone String?
+  user     User      @relation(fields: [userId], references: [id])
+  veiculos Veiculo[]
+  viagens  Viagem[]
+
+  @@map("motoristas")
+}
+
+model Supervisor {
+  userId       Int    @id
+  departamento String
+  user         User   @relation(fields: [userId], references: [id])
+
+  @@map("supervisores")
+}
+
+model Veiculo {
+  id          Int       @id @default(autoincrement())
+  placa       String    @unique
+  modelo      String
+  motoristaId Int
+  motorista   Motorista @relation(fields: [motoristaId], references: [userId])
+
+  @@map("veiculos")
+}
+
+model DiasSolicitados {
+  id     Int       @id @default(autoincrement())
+  userId Int
+  dia    DiaSemana
+  user   User      @relation(fields: [userId], references: [id])
+
+  @@map("dias_solicitados")
+}
+
+model Reserva {
+  id       Int           @id @default(autoincrement())
+  userId   Int
+  status   StatusReserva @default(PENDENTE)
+  data     DateTime
+  user     User          @relation(fields: [userId], references: [id])
+  viagemId Int?
+  viagem   Viagem?       @relation(fields: [viagemId], references: [id])
+
+  @@map("reservas")
+}
+
+model Viagem {
+  id          Int          @id @default(autoincrement())
+  motoristaId Int
+  data        DateTime
+  status      StatusViagem @default(PENDENTE)
+  motorista   Motorista    @relation(fields: [motoristaId], references: [userId])
+  reservas    Reserva[]
+
+  @@map("viagens")
+}
