@@ -1,8 +1,7 @@
 import loginHandler from "../../models/auth/loginHandler.js";
 import registerHandler from "../../models/auth/registerHandler.js";
 import {
-  loginSchema,
-  registerSchema,
+  loginSchema
 } from "../../models/auth/validation/schemas.js";
 
 export default async function authController(app) {
@@ -19,10 +18,7 @@ export default async function authController(app) {
 
   app.post(
     "/register",
-    {
-      schema: {
-        body: registerSchema,
-      },
+    { 
       config: { public: true },
     },
     registerHandler
