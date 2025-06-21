@@ -1,14 +1,20 @@
 import fastify from "fastify";
+import authController  from "../controllers/auth/authController.js";
+import fastifyMultipart from "@fastify/multipart";
 import {
     serializerCompiler,
     validatorCompiler,
 } from "fastify-type-provider-zod";
-import authController  from "../controllers/auth/authController.js";
+import { ZodError } from "zod"; 
+import supervisorController from "../controllers/supervisor/supervisorController.js";
+
 const app = fastify();
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
+
+app.register(fastifyMultipart);
 
 app.setErrorHandler((error, request, reply) => {
     if (error instanceof ZodError) {
@@ -23,5 +29,6 @@ app.setErrorHandler((error, request, reply) => {
 });
 
 app.register(authController);
+app.register(supervisorController);
 
 export default app;
