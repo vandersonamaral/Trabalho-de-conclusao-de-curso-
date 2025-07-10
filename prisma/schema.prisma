@@ -35,6 +35,7 @@ enum StatusReserva {
   REJEITADA
   CANCELADA
   EMBARCADO
+  DESEMBARCADO
 }
 
 enum StatusViagem {
@@ -45,27 +46,39 @@ enum StatusViagem {
 }
 
 model User {
-  id                      Int               @id @default(autoincrement())
+  id                      String               @id @default(uuid())
   nome                    String
-  email                   String            @unique
+  email                   String               @unique
   senha                   String
-  role                    Role              @default(ALUNO)
-  statusCadastro          StatusCadastro    @default(PENDENTE)
-  matricula               String? // Apenas alunos
-  cpf                     String? // Apenas alunos
-  rg                      String? // Apenas alunos
-  telefone                String? // Aluno ou motorista
-  comprovanteMatriculaUrl String? // Aluno envia
+  role                    Role                 @default(ALUNO)
+  statusCadastro          StatusCadastro       @default(PENDENTE)
+  matricula               String?
+  cpf                     String?
+  rg                      String?
+  telefone                String?
+  comprovanteMatriculaUrl String?
+  instituicaoId           Int? // <- FK para Instituição
+  instituicao             Instituicao?         @relation(fields: [instituicaoId], references: [id])
   motorista               Motorista?
   supervisor              Supervisor?
   diasSolicitados         DiasSolicitados[]
   reservas                Reserva[]
+  passwordResetTokens     PasswordResetToken[]
 
   @@map("users")
 }
 
+model Instituicao {
+  id     Int     @id @default(autoincrement())
+  nome   String  @unique
+  cidade String?
+  alunos User[]
+
+  @@map("instituicoes")
+}
+
 model Motorista {
-  userId   Int       @id
+  userId   String    @id
   cnh      String
   telefone String?
   user     User      @relation(fields: [userId], references: [id])
@@ -76,7 +89,7 @@ model Motorista {
 }
 
 model Supervisor {
-  userId       Int    @id
+  userId       String @id
   departamento String
   user         User   @relation(fields: [userId], references: [id])
 
@@ -87,7 +100,7 @@ model Veiculo {
   id          Int       @id @default(autoincrement())
   placa       String    @unique
   modelo      String
-  motoristaId Int
+  motoristaId String
   motorista   Motorista @relation(fields: [motoristaId], references: [userId])
 
   @@map("veiculos")
@@ -95,7 +108,7 @@ model Veiculo {
 
 model DiasSolicitados {
   id     Int       @id @default(autoincrement())
-  userId Int
+  userId String
   dia    DiaSemana
   user   User      @relation(fields: [userId], references: [id])
 
@@ -104,7 +117,7 @@ model DiasSolicitados {
 
 model Reserva {
   id       Int           @id @default(autoincrement())
-  userId   Int
+  userId   String
   status   StatusReserva @default(PENDENTE)
   data     DateTime
   user     User          @relation(fields: [userId], references: [id])
@@ -116,11 +129,19 @@ model Reserva {
 
 model Viagem {
   id          Int          @id @default(autoincrement())
-  motoristaId Int
+  motoristaId String
   data        DateTime
   status      StatusViagem @default(PENDENTE)
   motorista   Motorista    @relation(fields: [motoristaId], references: [userId])
   reservas    Reserva[]
 
   @@map("viagens")
+}
+
+model PasswordResetToken {
+  id        Int      @id @default(autoincrement())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
 }
