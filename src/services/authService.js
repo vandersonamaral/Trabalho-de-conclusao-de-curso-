@@ -2,6 +2,7 @@ import prisma from "../config/prisma.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { loginSchema, registerAlunoSchema, registerSupervisorSchema } from "../schemas/authSchemas.js";
+import { ZodError } from "zod";
 
 export async function login(request, reply) {
     try {
@@ -15,7 +16,7 @@ export async function login(request, reply) {
         const token = jwt.sign({ sub: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
         return reply.send({ token });
     } catch (error) {
-        return reply.status(400).send({ error: "Erro no login", detalhes: error.message });
+        throw error;
     }
 }
 
@@ -45,7 +46,7 @@ export async function registerAluno(request, reply) {
         });
         return reply.status(201).send({ message: "Aluno registrado com sucesso. Aguardando aprovação.", userId: user.id });
     } catch (error) {
-        return reply.status(400).send({ error: "Erro no cadastro", detalhes: error.message });
+        throw error;
     }
 }
 
@@ -88,6 +89,6 @@ export async function registerSupervisor(request, reply) {
         }
         return reply.status(201).send({ message: "Supervisor cadastrado com sucesso.", userId: user.id });
     } catch (error) {
-        return reply.status(400).send({ error: "Erro no cadastro", detalhes: error.message });
+        throw error;
     }
 } 
