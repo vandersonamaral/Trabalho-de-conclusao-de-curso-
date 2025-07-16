@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 
+// Middleware de autenticação JWT
 export async function authenticate(request, reply) {
     try {
         const authHeader = request.headers.authorization;
@@ -8,6 +9,7 @@ export async function authenticate(request, reply) {
         }
         const token = authHeader.split(" ")[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        // Adiciona informações do usuário ao request para uso posterior
         request.user = {
             id: decoded.sub,
             role: decoded.role,
