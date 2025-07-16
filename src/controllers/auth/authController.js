@@ -1,26 +1,8 @@
-import loginHandler from "../../models/auth/loginHandler.js";
-import registerHandler from "../../models/auth/registerHandler.js";
-import {
-  loginSchema
-} from "../../models/auth/validation/schemas.js";
+import { login, registerAluno, registerSupervisor } from "../../services/authService.js";
+import { loginSchema, registerAlunoSchema, registerSupervisorSchema } from "../../schemas/authSchemas.js";
 
 export default async function authController(app) {
-  app.post(
-    "/login",
-    {
-      schema: {
-        body: loginSchema,
-      },
-      config: { public: true },
-    },
-    loginHandler
-  );
-
-  app.post(
-    "/register",
-    { 
-      config: { public: true },
-    },
-    registerHandler
-  );
+  app.post("/login", { schema: { body: loginSchema }, config: { public: true } }, login);
+  app.post("/register", { schema: { body: registerAlunoSchema }, config: { public: true } }, registerAluno);
+  app.post("/register-supervisor", { schema: { body: registerSupervisorSchema }, config: { public: true } }, registerSupervisor);
 }

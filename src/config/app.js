@@ -1,18 +1,21 @@
 import fastify from "fastify";
-import authController  from "../controllers/auth/authController.js";
+import authController from "../controllers/auth/authController.js";
 import fastifyMultipart from "@fastify/multipart";
 import {
     serializerCompiler,
     validatorCompiler,
 } from "fastify-type-provider-zod";
-import { ZodError } from "zod"; 
-import supervisorController from "../controllers/supervisor/supervisorController.js";
+import { ZodError } from "zod";
+import supervisorRoutes from "../routes/supervisorRoutes.js";
+import reservaRoutes from "../routes/reservaRoutes.js";
+import alunoRoutes from "../routes/alunoRoutes.js";
+import motoristaRoutes from "../routes/motoristaRoutes.js";
+import authRoutes from "../routes/authRoutes.js";
 
 const app = fastify();
 
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
-
 
 app.register(fastifyMultipart);
 
@@ -29,6 +32,10 @@ app.setErrorHandler((error, request, reply) => {
 });
 
 app.register(authController);
-app.register(supervisorController);
+app.register(supervisorRoutes);
+app.register(reservaRoutes);
+app.register(alunoRoutes);
+app.register(motoristaRoutes);
+app.register(authRoutes);
 
 export default app;
