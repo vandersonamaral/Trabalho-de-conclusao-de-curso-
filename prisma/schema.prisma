@@ -57,13 +57,17 @@ model User {
   rg                      String?
   telefone                String?
   comprovanteMatriculaUrl String?
-  instituicaoId           Int? // <- FK para Instituição
+  instituicaoId           Int? 
   instituicao             Instituicao?         @relation(fields: [instituicaoId], references: [id])
   motorista               Motorista?
   supervisor              Supervisor?
   diasSolicitados         DiasSolicitados[]
+  horariosRecorrentes     HorarioRecorrente[]
+  solicitacoesHorario     SolicitacaoHorario[]
+  solicitacoesAvulsas     SolicitacaoReservaAvulsa[]
   reservas                Reserva[]
   passwordResetTokens     PasswordResetToken[]
+  fotoPerfilUrl           String? 
 
   @@map("users")
 }
@@ -115,11 +119,65 @@ model DiasSolicitados {
   @@map("dias_solicitados")
 }
 
+model HorarioRecorrente {
+  id           Int           @id @default(autoincrement())
+  userId       String
+  diaSemana    DiaSemana
+  vaiIda       Boolean       @default(true)
+  vaiVolta     Boolean       @default(true)
+  ativo        Boolean       @default(true)
+  aprovado     Boolean       @default(false)
+  dataInicio   DateTime      @default(now())
+  dataFim      DateTime?     // Opcional para horários temporários
+  observacoes  String?
+  user         User          @relation(fields: [userId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@unique([userId, diaSemana])
+  @@map("horarios_recorrentes")
+}
+
+model SolicitacaoHorario {
+  id           Int             @id @default(autoincrement())
+  userId       String
+  diaSemana    DiaSemana
+  vaiIda       Boolean         @default(true)
+  vaiVolta     Boolean         @default(true)
+  motivo       String
+  status       StatusCadastro  @default(PENDENTE)
+  dataInicio   DateTime
+  dataFim      DateTime?
+  user         User            @relation(fields: [userId], references: [id])
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@map("solicitacoes_horario")
+}
+
+model SolicitacaoReservaAvulsa {
+  id           Int             @id @default(autoincrement())
+  userId       String
+  data         DateTime
+  vaiIda       Boolean         @default(true)
+  vaiVolta     Boolean         @default(true)
+  motivo       String
+  status       StatusCadastro  @default(PENDENTE) // PENDENTE, APROVADO, REJEITADO
+  user         User            @relation(fields: [userId], references: [id])
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@map("solicitacoes_reserva_avulsa")
+}
+
 model Reserva {
   id       Int           @id @default(autoincrement())
   userId   String
   status   StatusReserva @default(PENDENTE)
   data     DateTime
+  vaiIda   Boolean       @default(true)
+  vaiVolta Boolean       @default(true)
+  ativo    Boolean       @default(true) // Soft delete lógico
   user     User          @relation(fields: [userId], references: [id])
   viagemId Int?
   viagem   Viagem?       @relation(fields: [viagemId], references: [id])
