@@ -60,25 +60,25 @@ export default function RegisterScreen() {
   }, []);
 
   useEffect(() => {
-      const fetchInstituicoes = async () => {
-        try {
-          setLoadingInstituicoes(true);
-          const res = await api.get("/instituicoes");
-          // Garante que a resposta é um array
-          if (Array.isArray(res.data)) {
-            setInstituicoes(res.data);
-          } else if (res.data && Array.isArray(res.data.instituicoes)) {
-            setInstituicoes(res.data.instituicoes);
-          } else {
-            setInstituicoes([]);
-          }
-        } catch (e) {
+    const fetchInstituicoes = async () => {
+      try {
+        setLoadingInstituicoes(true);
+        const res = await api.get("/instituicoes");
+        // Garante que a resposta é um array
+        if (Array.isArray(res.data)) {
+          setInstituicoes(res.data);
+        } else if (res.data && Array.isArray(res.data.instituicoes)) {
+          setInstituicoes(res.data.instituicoes);
+        } else {
           setInstituicoes([]);
-        } finally {
-          setLoadingInstituicoes(false);
         }
-      };
-      fetchInstituicoes();
+      } catch (e) {
+        setInstituicoes([]);
+      } finally {
+        setLoadingInstituicoes(false);
+      }
+    };
+    fetchInstituicoes();
   }, []);
 
   const toggleDia = (dia: string) => {
@@ -96,9 +96,12 @@ export default function RegisterScreen() {
       });
       if (result.assets && result.assets.length > 0) {
         const file = result.assets[0];
-  const maxSize = 5242880; // 5MB
+        const maxSize = 5242880; // 5MB
         if (file.size && file.size > maxSize) {
-          Alert.alert("Arquivo muito grande", "Selecione uma imagem ou PDF com até 1MB.");
+          Alert.alert(
+            "Arquivo muito grande",
+            "Selecione uma imagem ou PDF com até 1MB."
+          );
           return;
         }
         setComprovante(file);
@@ -126,7 +129,11 @@ export default function RegisterScreen() {
         ? {
             uri: comprovante.uri,
             name: comprovante.name || "comprovante.jpg",
-            type: comprovante.mimeType || (comprovante.name?.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
+            type:
+              comprovante.mimeType ||
+              (comprovante.name?.endsWith(".pdf")
+                ? "application/pdf"
+                : "image/jpeg"),
           }
         : null,
     };
@@ -150,7 +157,7 @@ export default function RegisterScreen() {
       return;
     }
 
-    if (telefone.replace(/\D/g, '').length < 8) {
+    if (telefone.replace(/\D/g, "").length < 8) {
       setErro("O telefone deve conter pelo menos 8 dígitos (incluindo DDD).");
       setLoading(false);
       return;
@@ -195,12 +202,16 @@ export default function RegisterScreen() {
         formData.append("comprovanteMatricula", {
           uri: comprovante.uri,
           name: comprovante.name || "comprovante.jpg",
-          type: comprovante.mimeType || (comprovante.name?.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg'),
+          type:
+            comprovante.mimeType ||
+            (comprovante.name?.endsWith(".pdf")
+              ? "application/pdf"
+              : "image/jpeg"),
         });
       }
       // Log do formData para debug
       for (let pair of (formData as any)._parts || []) {
-        console.log('[RegisterScreen] formData:', pair[0], pair[1]);
+        console.log("[RegisterScreen] formData:", pair[0], pair[1]);
       }
 
       // Envio usando fetch puro para multipart (NÃO definir Content-Type)
@@ -219,13 +230,17 @@ export default function RegisterScreen() {
       }
       if (!response.ok) {
         let backendError = "Erro ao cadastrar.";
-        if (data && typeof data === 'object') {
+        if (data && typeof data === "object") {
           if (data.error) {
             backendError = data.error;
             if (data.detalhes) {
-              if (Array.isArray(data.detalhes) && data.detalhes.length > 0 && data.detalhes[0].message) {
+              if (
+                Array.isArray(data.detalhes) &&
+                data.detalhes.length > 0 &&
+                data.detalhes[0].message
+              ) {
                 backendError += `: ${data.detalhes[0].message}`;
-              } else if (typeof data.detalhes === 'string') {
+              } else if (typeof data.detalhes === "string") {
                 backendError += `: ${data.detalhes}`;
               } else {
                 backendError += `: ${JSON.stringify(data.detalhes)}`;
@@ -234,16 +249,24 @@ export default function RegisterScreen() {
           } else {
             backendError = JSON.stringify(data);
           }
-        } else if (typeof data === 'string') {
+        } else if (typeof data === "string") {
           backendError = data;
         }
         setErro(backendError);
         Alert.alert("Erro ao cadastrar", backendError);
-        console.log("[RegisterScreen] Erro ao cadastrar:", backendError, data, response);
+        console.log(
+          "[RegisterScreen] Erro ao cadastrar:",
+          backendError,
+          data,
+          response
+        );
         setLoading(false);
         return;
       }
-      Alert.alert("Cadastro realizado com sucesso!", JSON.stringify(data, null, 2));
+      Alert.alert(
+        "Cadastro realizado com sucesso!",
+        JSON.stringify(data, null, 2)
+      );
       console.log("[RegisterScreen] Resposta do backend:", data);
       setAguardando(true);
     } catch (err: any) {
