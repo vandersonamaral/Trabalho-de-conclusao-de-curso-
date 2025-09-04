@@ -70,8 +70,46 @@ export async function listarDocumentosAlunos(request, reply) {
 export async function aprovarCadastro(request, reply) {
     try {
         const id = request.params.id;
-        await prisma.user.update({ where: { id }, data: { statusCadastro: "APROVADO" } });
-        return reply.send({ message: "Usuário aprovado com sucesso." });
+        // Aprova o usuário
+        const user = await prisma.user.update({ where: { id }, data: { statusCadastro: "APROVADO" } });
+        // Busca os dias solicitados pelo aluno
+        const aluno = await prisma.user.findUnique({ where: { id }, include: { diasSolicitados: true } });
+        if (aluno && aluno.diasSolicitados && aluno.diasSolicitados.length > 0) {
+            // Cria reservas automáticas para cada dia solicitado até o fim do semestre
+            const hoje = new Date();
+            const ano = hoje.getFullYear();
+            const fimSemestre = new Date(ano, 11, 31); // 31/12 do ano corrente
+            const diasSemanaMap = {
+                "DOMINGO": 0,
+                "SEGUNDA": 1,
+                "TERCA": 2,
+                "QUARTA": 3,
+                "QUINTA": 4,
+                "SEXTA": 5,
+                "SABADO": 6
+            };
+            let data = new Date(hoje);
+            data.setHours(0, 0, 0, 0);
+            while (data <= fimSemestre) {
+                const diaSemana = data.getDay();
+                const diaSolicitado = aluno.diasSolicitados.find(ds => diasSemanaMap[ds.dia] === diaSemana);
+                if (diaSolicitado) {
+                    // Verifica se já existe reserva para esse dia
+                    const existe = await prisma.reserva.findFirst({ where: { userId: id, data: data } });
+                    if (!existe) {
+                        await prisma.reserva.create({
+                            data: {
+                                userId: id,
+                                data: new Date(data),
+                                status: "APROVADA"
+                            }
+                        });
+                    }
+                }
+                data.setDate(data.getDate() + 1);
+            }
+        }
+        return reply.send({ message: "Usuário aprovado com sucesso e reservas criadas automaticamente." });
     } catch (err) {
         console.error('Erro ao aprovar cadastro:', err);
         return reply.status(500).send({ error: "Erro ao aprovar cadastro." });
@@ -195,5 +233,49 @@ export async function atualizarSupervisor(request, reply) {
     } catch (err) {
         console.error('Erro ao atualizar dados do supervisor:', err);
         return reply.status(500).send({ error: "Erro ao atualizar dados do supervisor." });
+    }
+}
+
+// Listar reservas pendentes para aprovação
+export async function listarReservasPendentes(request, reply) {
+    try {
+        const reservas = await prisma.reserva.findMany({
+            where: { status: "PENDENTE" },
+            include: {
+                user: { select: { id: true, nome: true, email: true, matricula: true } }
+            },
+            orderBy: { data: 'asc' }
+        });
+        return reply.send({ reservas });
+    } catch (err) {
+        return reply.status(500).send({ error: "Erro ao buscar reservas pendentes." });
+    }
+}
+// Aprovar reserva pendente
+export async function aprovarReserva(request, reply) {
+    try {
+        const { id } = request.params;
+        const reserva = await prisma.reserva.findUnique({ where: { id: Number(id) } });
+        if (!reserva || reserva.status !== "PENDENTE") {
+            return reply.status(404).send({ error: "Reserva pendente não encontrada." });
+        }
+        await prisma.reserva.update({ where: { id: Number(id) }, data: { status: "APROVADA" } });
+        return reply.send({ message: "Reserva aprovada com sucesso." });
+    } catch (err) {
+        return reply.status(500).send({ error: "Erro ao aprovar reserva." });
+    }
+}
+// Rejeitar reserva pendente
+export async function rejeitarReserva(request, reply) {
+    try {
+        const { id } = request.params;
+        const reserva = await prisma.reserva.findUnique({ where: { id: Number(id) } });
+        if (!reserva || reserva.status !== "PENDENTE") {
+            return reply.status(404).send({ error: "Reserva pendente não encontrada." });
+        }
+        await prisma.reserva.update({ where: { id: Number(id) }, data: { status: "REJEITADA" } });
+        return reply.send({ message: "Reserva rejeitada com sucesso." });
+    } catch (err) {
+        return reply.status(500).send({ error: "Erro ao rejeitar reserva." });
     }
 } 
