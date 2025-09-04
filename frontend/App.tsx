@@ -81,7 +81,10 @@ function MainApp() {
       >
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen name="RecuperarSenhaAluno" component={RecuperarSenhaAluno} />
+        <Stack.Screen
+          name="RecuperarSenhaAluno"
+          component={RecuperarSenhaAluno}
+        />
         <Stack.Screen name="AppTabs" component={AppTabs} />
         <Stack.Screen name="SolicitarReserva" component={SolicitarReserva} />
         <Stack.Screen name="DetalheReserva" component={DetalheReserva} />
