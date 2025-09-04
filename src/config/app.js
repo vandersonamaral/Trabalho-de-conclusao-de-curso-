@@ -12,11 +12,26 @@ import fastifySwaggerUi from '@fastify/swagger-ui';
 import fastifyCors from '@fastify/cors';
 
 export default function buildApp() {
-    const app = fastify();
+    const app = fastify({ logger: false, bodyLimit: 20971520 }); // 20MB
+
+    // Middleware de log detalhado
+    app.addHook("onRequest", async (request, reply) => {
+        request.logStart = Date.now();
+        console.log(`[REQ] ${request.method} ${request.url} - headers:`, request.headers);
+    });
+
+    app.addHook("onResponse", async (request, reply) => {
+        const ms = Date.now() - (request.logStart || Date.now());
+        console.log(`[RES] ${request.method} ${request.url} -> ${reply.statusCode} (${ms}ms)`);
+    });
+
+    app.addHook("onError", async (request, reply, error) => {
+        console.error("[GLOBAL ERROR]", error);
+    });
 
     // Habilita CORS para permitir requisições do frontend
     app.register(fastifyCors, {
-        origin: true 
+        origin: true
     });
 
     // Swagger/OpenAPI
@@ -47,11 +62,10 @@ export default function buildApp() {
     // Endpoint de debug para inspecionar o body recebido
     app.post('/debug-body', async (request, reply) => {
         console.log('DEBUG BODY:', request.body);
-        console.log('DEBUG BODY JSON:', JSON.stringify(request.body));
         return reply.send({ body: request.body });
     });
 
-    
+
     app.register(authController);
     app.register(supervisorRoutes);
     app.register(reservaRoutes);
