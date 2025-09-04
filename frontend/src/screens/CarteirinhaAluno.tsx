@@ -99,16 +99,27 @@ export default function CarteirinhaAluno() {
               )}
             </View>
 
-
             {/* Nome do aluno */}
-            <Text style={styles.nome}>{aluno.nome || "Nome não disponível"}</Text>
+            <Text style={styles.nome}>
+              {aluno.nome || "Nome não disponível"}
+            </Text>
 
             {/* CPF do aluno */}
             {aluno.cpf && (
               <View style={styles.cpfContainer}>
-                <MaterialIcons name="badge" size={18} color="#667eea" style={{marginRight: 6}} />
+                <MaterialIcons
+                  name="badge"
+                  size={18}
+                  color="#667eea"
+                  style={{ marginRight: 6 }}
+                />
                 <Text style={styles.cpfLabel}>CPF:</Text>
-                <Text style={styles.cpfValue}>{aluno.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4")}</Text>
+                <Text style={styles.cpfValue}>
+                  {aluno.cpf.replace(
+                    /(\d{3})(\d{3})(\d{3})(\d{2})/,
+                    "$1.$2.$3-$4"
+                  )}
+                </Text>
               </View>
             )}
 
@@ -171,26 +182,26 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   cpfContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#eef1fa',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#eef1fa",
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 4,
     marginBottom: 10,
     marginTop: -6,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
   cpfLabel: {
     fontSize: 15,
-    color: '#667eea',
-    fontWeight: 'bold',
+    color: "#667eea",
+    fontWeight: "bold",
     marginRight: 4,
   },
   cpfValue: {
     fontSize: 15,
-    color: '#333',
-    fontWeight: 'bold',
+    color: "#333",
+    fontWeight: "bold",
     letterSpacing: 1,
   },
   avatarContainer: { marginBottom: 16 },
