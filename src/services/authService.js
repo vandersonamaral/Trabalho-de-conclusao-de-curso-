@@ -13,7 +13,7 @@ export async function login(request, reply) {
         if (!senhaValida) return reply.status(401).send({ error: "Credenciais inválidas." });
         if (user.statusCadastro !== "APROVADO") return reply.status(403).send({ error: "Cadastro pendente de aprovação." });
         if (!process.env.JWT_SECRET) return reply.status(500).send({ error: "Configuração do servidor ausente (JWT_SECRET)." });
-        const token = jwt.sign({ sub: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "7d" });
+        const token = jwt.sign({ sub: user.id, role: user.role }, process.env.JWT_SECRET, { expiresIn: "30d" });
         return reply.send({ token });
     } catch (error) {
         throw error;

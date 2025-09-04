@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE `reservas` ADD COLUMN `vaiIda` BOOLEAN NOT NULL DEFAULT true,
+    ADD COLUMN `vaiVolta` BOOLEAN NOT NULL DEFAULT true;

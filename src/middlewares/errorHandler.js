@@ -41,7 +41,7 @@ export default function errorHandler(error, request, reply) {
     }
     // Outros erros
     reply.status(error.statusCode || 500).send({
-        error: error.message || 'Internal Server Error',
-        details: error.details || undefined
+        error: error && error.message ? error.message : 'Internal Server Error',
+        details: error && error.details ? error.details : undefined
     });
 } 
