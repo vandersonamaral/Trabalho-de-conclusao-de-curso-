@@ -1,3 +1,4 @@
+// Middleware de autorização por papel (role)
 export function authorize(roles = []) {
     return async (request, reply) => {
         const user = request.user;

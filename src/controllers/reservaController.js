@@ -1,9 +1,7 @@
 import prisma from "../config/prisma.js";
 import { generateQRCode } from "../utils/qrcode.js";
 
-
-
-// Aluno cria reserva
+// Criação de reserva por aluno
 export async function createReserva(request, reply) {
     try {
         const { dia } = request.body;
@@ -16,13 +14,14 @@ export async function createReserva(request, reply) {
                 status: "PENDENTE"
             }
         });
-        return reply.status(201).send(reserva);
+        return reply.status(201).send({ message: "Reserva criada com sucesso.", reserva });
     } catch (err) {
+        console.error('Erro ao criar reserva:', err);
         return reply.status(500).send({ error: "Erro ao criar reserva." });
     }
 }
 
-// Aluno obtém QR Code da reserva
+// Geração de QR Code da reserva
 export async function getReservaQRCode(request, reply) {
     try {
         const { id } = request.params;
@@ -34,11 +33,12 @@ export async function getReservaQRCode(request, reply) {
         const qrCode = await generateQRCode(JSON.stringify(qrPayload));
         return reply.type("image/png").send(qrCode);
     } catch (err) {
+        console.error('Erro ao gerar QR Code:', err);
         return reply.status(500).send({ error: "Erro ao gerar QR Code." });
     }
 }
 
-// Motorista faz leitura do QR Code para embarque/desembarque
+// Embarque/desembarque via QR Code
 export async function embarqueReserva(request, reply) {
     try {
         const { qrData } = request.body;
@@ -63,12 +63,12 @@ export async function embarqueReserva(request, reply) {
         await prisma.reserva.update({ where: { id: reserva.id }, data: { status: novoStatus } });
         return reply.send({ message: `Reserva ${novoStatus.toLowerCase()}.`, reservaId: reserva.id });
     } catch (err) {
-        console.error('Erro detalhado no embarqueReserva:', err);
+        console.error('Erro ao processar embarque:', err);
         return reply.status(500).send({ error: "Erro ao processar embarque." });
     }
 }
 
-// Motorista lista todos os alunos embarcados em suas viagens
+// Listar alunos embarcados em viagens do motorista
 export async function listarEmbarcados(request, reply) {
     try {
         const motoristaId = request.user.id;
@@ -84,12 +84,14 @@ export async function listarEmbarcados(request, reply) {
                 viagem: true
             }
         });
-        return reply.send(reservas);
+        return reply.send({ message: "Lista de embarcados.", reservas });
     } catch (err) {
+        console.error('Erro ao listar embarcados:', err);
         return reply.status(500).send({ error: "Erro ao listar embarcados." });
     }
 }
 
+// Listar status das reservas de uma viagem
 export async function listarStatusReservasViagem(request, reply) {
     try {
         const motoristaId = request.user.id;
@@ -115,11 +117,13 @@ export async function listarStatusReservasViagem(request, reply) {
         const pendentes = viagem.reservas.filter(r => r.status === "PENDENTE");
 
         return reply.send({
+            message: "Status das reservas da viagem.",
             embarcados,
             finalizados,
             pendentes
         });
     } catch (err) {
+        console.error('Erro ao listar status das reservas:', err);
         return reply.status(500).send({ error: "Erro ao listar status das reservas." });
     }
 } 
