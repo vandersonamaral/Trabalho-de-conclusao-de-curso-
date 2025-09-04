@@ -111,7 +111,10 @@ export default function PerfilAluno({ navigation }: Props) {
             await AsyncStorage.removeItem("token");
             await AsyncStorage.removeItem("lembrarEmail");
             // Garante logout no web apenas se window existir e for ambiente browser
-            if (typeof window !== "undefined" && typeof window.document !== "undefined") {
+            if (
+              typeof window !== "undefined" &&
+              typeof window.document !== "undefined"
+            ) {
               if (window.localStorage) {
                 window.localStorage.removeItem("token");
                 window.localStorage.removeItem("lembrarEmail");
@@ -237,7 +240,7 @@ export default function PerfilAluno({ navigation }: Props) {
       }
       console.log("Permissão concedida. Abrindo ImagePicker...");
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: 'Images' as any,
+        mediaTypes: "Images" as any,
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.7,
@@ -256,15 +259,15 @@ export default function PerfilAluno({ navigation }: Props) {
       setUploadingFoto(true);
       const foto = result.assets[0];
       console.log("Foto selecionada:", foto);
-      
+
       try {
         console.log("Iniciando upload da foto...");
         const data = await uploadFotoPerfil(foto);
         console.log("Resposta do upload:", data);
-        
+
         console.log("Recarregando perfil...");
         await loadUserProfile(); // Garante que o perfil é recarregado com a nova foto
-        
+
         Alert.alert("Sucesso", "Foto de perfil atualizada!");
       } catch (uploadError) {
         console.error("Erro específico no upload:", uploadError);
@@ -303,7 +306,11 @@ export default function PerfilAluno({ navigation }: Props) {
               await loadUserProfile(); // Recarrega o perfil
               Alert.alert("Sucesso", "Foto de perfil removida!");
             } catch (err: any) {
-              console.log("Erro ao remover foto de perfil:", err, err?.response);
+              console.log(
+                "Erro ao remover foto de perfil:",
+                err,
+                err?.response
+              );
               Alert.alert(
                 "Erro",
                 err?.response?.data?.error ||
@@ -710,16 +717,16 @@ export default function PerfilAluno({ navigation }: Props) {
                   flex: 1,
                   justifyContent: "center",
                   alignItems: "center",
-                  backgroundColor: 'rgba(0,0,0,0.5)',
+                  backgroundColor: "rgba(0,0,0,0.5)",
                 }}
               >
                 <View
                   style={{
-                    backgroundColor: '#fff',
+                    backgroundColor: "#fff",
                     padding: 32,
                     borderRadius: 20,
                     width: 340,
-                    shadowColor: '#000',
+                    shadowColor: "#000",
                     shadowOffset: { width: 0, height: 2 },
                     shadowOpacity: 0.2,
                     shadowRadius: 8,
@@ -732,14 +739,22 @@ export default function PerfilAluno({ navigation }: Props) {
                       fontSize: 22,
                       marginBottom: 24,
                       color: colors.primary,
-                      textAlign: 'center',
+                      textAlign: "center",
                     }}
                   >
                     Alterar Senha
                   </Text>
                   {/* Campo Senha Atual */}
                   <View style={{ marginBottom: 16 }}>
-                    <Text style={{ color: colors.textSecondary, marginBottom: 4, fontSize: 14 }}>Senha atual</Text>
+                    <Text
+                      style={{
+                        color: colors.textSecondary,
+                        marginBottom: 4,
+                        fontSize: 14,
+                      }}
+                    >
+                      Senha atual
+                    </Text>
                     <View style={{ position: "relative" }}>
                       <TextInput
                         placeholder="Digite sua senha atual"
@@ -753,7 +768,7 @@ export default function PerfilAluno({ navigation }: Props) {
                           padding: 12,
                           paddingRight: 40,
                           fontSize: 16,
-                          backgroundColor: '#f7f7f7',
+                          backgroundColor: "#f7f7f7",
                         }}
                       />
                       <TouchableOpacity
@@ -766,7 +781,9 @@ export default function PerfilAluno({ navigation }: Props) {
                         onPress={() => setShowSenhaAtual((v) => !v)}
                       >
                         <MaterialIcons
-                          name={showSenhaAtual ? "visibility" : "visibility-off"}
+                          name={
+                            showSenhaAtual ? "visibility" : "visibility-off"
+                          }
                           size={24}
                           color={colors.primary}
                         />
@@ -775,7 +792,15 @@ export default function PerfilAluno({ navigation }: Props) {
                   </View>
                   {/* Campo Nova Senha */}
                   <View style={{ marginBottom: 16 }}>
-                    <Text style={{ color: colors.textSecondary, marginBottom: 4, fontSize: 14 }}>Nova senha</Text>
+                    <Text
+                      style={{
+                        color: colors.textSecondary,
+                        marginBottom: 4,
+                        fontSize: 14,
+                      }}
+                    >
+                      Nova senha
+                    </Text>
                     <View style={{ position: "relative" }}>
                       <TextInput
                         placeholder="Digite a nova senha"
@@ -789,7 +814,7 @@ export default function PerfilAluno({ navigation }: Props) {
                           padding: 12,
                           paddingRight: 40,
                           fontSize: 16,
-                          backgroundColor: '#f7f7f7',
+                          backgroundColor: "#f7f7f7",
                         }}
                       />
                       <TouchableOpacity
@@ -811,7 +836,15 @@ export default function PerfilAluno({ navigation }: Props) {
                   </View>
                   {/* Campo Confirmar Nova Senha */}
                   <View style={{ marginBottom: 28 }}>
-                    <Text style={{ color: colors.textSecondary, marginBottom: 4, fontSize: 14 }}>Confirmar nova senha</Text>
+                    <Text
+                      style={{
+                        color: colors.textSecondary,
+                        marginBottom: 4,
+                        fontSize: 14,
+                      }}
+                    >
+                      Confirmar nova senha
+                    </Text>
                     <View style={{ position: "relative" }}>
                       <TextInput
                         placeholder="Confirme a nova senha"
@@ -825,7 +858,7 @@ export default function PerfilAluno({ navigation }: Props) {
                           padding: 12,
                           paddingRight: 40,
                           fontSize: 16,
-                          backgroundColor: '#f7f7f7',
+                          backgroundColor: "#f7f7f7",
                         }}
                       />
                       <TouchableOpacity
@@ -864,7 +897,7 @@ export default function PerfilAluno({ navigation }: Props) {
                   >
                     <Text
                       style={{
-                        color: '#fff',
+                        color: "#fff",
                         fontWeight: "bold",
                         textAlign: "center",
                         fontSize: 16,
@@ -876,7 +909,7 @@ export default function PerfilAluno({ navigation }: Props) {
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={{
-                      backgroundColor: '#f2f2f2',
+                      backgroundColor: "#f2f2f2",
                       paddingVertical: 14,
                       borderRadius: 8,
                     }}
