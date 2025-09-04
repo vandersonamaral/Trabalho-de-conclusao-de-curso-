@@ -196,11 +196,11 @@ export async function atualizarFotoPerfil(request, reply) {
     console.log('📸 [FOTO] Recebido request para atualizar foto de perfil');
     console.log('📸 [FOTO] Headers:', request.headers);
     console.log('📸 [FOTO] Content-Type:', request.headers['content-type']);
-    
+
     try {
         const userId = request.user.id;
         console.log('📸 [FOTO] User ID:', userId);
-        
+
         // Verifica se o usuário existe
         const user = await prisma.user.findUnique({ where: { id: userId } });
         if (!user) {
@@ -221,7 +221,7 @@ export async function atualizarFotoPerfil(request, reply) {
         const parts = request.parts ? request.parts() : [];
         let fotoField = null;
         let partCount = 0;
-        
+
         for await (const part of parts) {
             partCount++;
             console.log(`📸 [FOTO] Part ${partCount}:`, {
@@ -230,7 +230,7 @@ export async function atualizarFotoPerfil(request, reply) {
                 filename: part.filename,
                 mimetype: part.mimetype
             });
-            
+
             if (part.type === 'file' && (part.fieldname === 'foto' || part.fieldname === 'fotoPerfil')) {
                 fotoField = part;
                 console.log('✅ [FOTO] Arquivo de foto encontrado!');
@@ -246,23 +246,23 @@ export async function atualizarFotoPerfil(request, reply) {
         // Validações do arquivo
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
         const maxSize = 5 * 1024 * 1024; // 5MB
-        
+
         console.log('📸 [FOTO] Validando tipo de arquivo:', fotoField.mimetype);
         if (!allowedTypes.includes(fotoField.mimetype)) {
             console.log('❌ [FOTO] Tipo de arquivo não permitido:', fotoField.mimetype);
-            return reply.status(400).send({ 
-                error: 'Tipo de arquivo não permitido. Use apenas JPEG, PNG ou WebP.' 
+            return reply.status(400).send({
+                error: 'Tipo de arquivo não permitido. Use apenas JPEG, PNG ou WebP.'
             });
         }
 
         console.log('📸 [FOTO] Convertendo para buffer...');
         const fileBuffer = await fotoField.toBuffer();
         console.log('📸 [FOTO] Tamanho do arquivo:', fileBuffer.length, 'bytes');
-        
+
         if (fileBuffer.length > maxSize) {
             console.log('❌ [FOTO] Arquivo muito grande:', fileBuffer.length, '>', maxSize);
-            return reply.status(400).send({ 
-                error: 'Arquivo muito grande. Tamanho máximo: 5MB.' 
+            return reply.status(400).send({
+                error: 'Arquivo muito grande. Tamanho máximo: 5MB.'
             });
         }
 
@@ -275,7 +275,7 @@ export async function atualizarFotoPerfil(request, reply) {
         if (user.fotoPerfilUrl && typeof user.fotoPerfilUrl === 'string' && user.fotoPerfilUrl.trim() !== '') {
             console.log('🗑️ [AUTO-CLEANUP] Foto antiga detectada:', user.fotoPerfilUrl);
             console.log('🗑️ [AUTO-CLEANUP] Removendo automaticamente antes do novo upload...');
-            
+
             try {
                 await removeFotoPerfilFromSupabase(user.fotoPerfilUrl);
                 console.log('✅ [AUTO-CLEANUP] Foto antiga removida automaticamente!');
@@ -294,39 +294,39 @@ export async function atualizarFotoPerfil(request, reply) {
         console.log('✅ [FOTO] Upload realizado com sucesso:', fotoPath);
         // Atualiza usuário no banco
         console.log('💾 [FOTO] Atualizando banco de dados...');
-        await prisma.user.update({ 
-            where: { id: userId }, 
-            data: { fotoPerfilUrl: fotoPath } 
+        await prisma.user.update({
+            where: { id: userId },
+            data: { fotoPerfilUrl: fotoPath }
         });
-        
+
         // Gera URL pública
         const publicUrl = getFotoPerfilUrl(fotoPath);
         console.log('🌐 [FOTO] URL pública gerada:', publicUrl);
         console.log('✅ [FOTO] Processo concluído com sucesso!');
-        
-        return reply.send({ 
+
+        return reply.send({
             message: 'Foto de perfil atualizada com sucesso.',
-            fotoPerfilUrl: publicUrl 
+            fotoPerfilUrl: publicUrl
         });
-        
+
     } catch (error) {
         console.error('❌ [FOTO] Erro ao atualizar foto de perfil:', error);
         console.error('❌ [FOTO] Stack trace:', error.stack);
-        
+
         if (error.message?.includes('Bucket not found')) {
-            return reply.status(500).send({ 
-                error: 'Erro de configuração do servidor. Bucket de fotos não encontrado.' 
+            return reply.status(500).send({
+                error: 'Erro de configuração do servidor. Bucket de fotos não encontrado.'
             });
         }
-        
+
         if (error.message?.includes('File size')) {
-            return reply.status(400).send({ 
-                error: 'Arquivo muito grande ou corrompido.' 
+            return reply.status(400).send({
+                error: 'Arquivo muito grande ou corrompido.'
             });
         }
-        
-        return reply.status(500).send({ 
-            error: error.message || 'Erro interno ao atualizar foto de perfil.' 
+
+        return reply.status(500).send({
+            error: error.message || 'Erro interno ao atualizar foto de perfil.'
         });
     }
 }
@@ -435,7 +435,7 @@ export async function deletarFotoPerfil(request, reply) {
     try {
         const userId = request.user.id;
         console.log('🗑️ [DELETE] Solicitação para deletar foto de perfil do usuário:', userId);
-        
+
         const user = await prisma.user.findUnique({ where: { id: userId } });
         if (!user) {
             console.log('❌ [DELETE] Usuário não encontrado');
@@ -449,7 +449,7 @@ export async function deletarFotoPerfil(request, reply) {
         }
 
         console.log('🗑️ [DELETE] Removendo foto do Supabase:', user.fotoPerfilUrl);
-        
+
         // Remove foto do Supabase
         try {
             await removeFotoPerfilFromSupabase(user.fotoPerfilUrl);
@@ -461,18 +461,18 @@ export async function deletarFotoPerfil(request, reply) {
 
         // Remove referência do banco
         console.log('💾 [DELETE] Limpando referência no banco de dados...');
-        await prisma.user.update({ 
-            where: { id: userId }, 
-            data: { fotoPerfilUrl: null } 
+        await prisma.user.update({
+            where: { id: userId },
+            data: { fotoPerfilUrl: null }
         });
 
         console.log('✅ [DELETE] Foto de perfil deletada com sucesso!');
         return reply.send({ message: 'Foto de perfil removida com sucesso.' });
-        
+
     } catch (error) {
         console.error('❌ [DELETE] Erro ao deletar foto de perfil:', error);
-        return reply.status(500).send({ 
-            error: 'Erro interno ao deletar foto de perfil.' 
+        return reply.status(500).send({
+            error: 'Erro interno ao deletar foto de perfil.'
         });
     }
 }
@@ -481,19 +481,19 @@ export async function deletarFotoPerfil(request, reply) {
 export async function limparFotosOrfas_Controller(request, reply) {
     try {
         console.log('🧹 [CLEANUP] Iniciando limpeza manual de fotos órfãs...');
-        
+
         const resultado = await limparFotosOrfas(prisma);
-        
-        return reply.send({ 
+
+        return reply.send({
             message: 'Limpeza de fotos órfãs concluída.',
             fotosRemovidas: resultado.removidas,
             erros: resultado.erros
         });
-        
+
     } catch (error) {
         console.error('❌ [CLEANUP] Erro ao limpar fotos órfãs:', error);
-        return reply.status(500).send({ 
-            error: 'Erro interno ao limpar fotos órfãs.' 
+        return reply.status(500).send({
+            error: 'Erro interno ao limpar fotos órfãs.'
         });
     }
 }
@@ -507,8 +507,8 @@ export async function solicitarReservaAvulsa(request, reply) {
         const userId = request.user.id;
 
         if (!data || !motivo?.trim()) {
-            return reply.status(400).send({ 
-                error: "Data e motivo são obrigatórios" 
+            return reply.status(400).send({
+                error: "Data e motivo são obrigatórios"
             });
         }
 
@@ -527,7 +527,7 @@ export async function solicitarReservaAvulsa(request, reply) {
         const dataReserva = new Date(data);
         const inicioDia = new Date(dataReserva.getFullYear(), dataReserva.getMonth(), dataReserva.getDate());
         const fimDia = new Date(dataReserva.getFullYear(), dataReserva.getMonth(), dataReserva.getDate() + 1);
-        
+
         const solicitacaoExistente = await prisma.solicitacaoReservaAvulsa.findFirst({
             where: {
                 userId,
@@ -559,11 +559,11 @@ export async function solicitarReservaAvulsa(request, reply) {
 
         console.log(`📋 Nova solicitação avulsa criada: ${user.nome} para ${dataReserva.toDateString()}`);
 
-        return reply.status(201).send({ 
+        return reply.status(201).send({
             message: "Solicitação enviada com sucesso. Aguarde a aprovação do supervisor.",
             solicitacao
         });
-        
+
     } catch (error) {
         console.error("Erro ao criar solicitação avulsa:", error);
         return reply.status(500).send({ error: "Erro interno do servidor" });
@@ -574,14 +574,14 @@ export async function solicitarReservaAvulsa(request, reply) {
 export async function listarSolicitacoesAvulsas(request, reply) {
     try {
         const userId = request.user.id;
-        
+
         const solicitacoes = await prisma.solicitacaoReservaAvulsa.findMany({
             where: { userId },
             orderBy: { createdAt: 'desc' }
         });
 
         return reply.status(200).send({ solicitacoes });
-        
+
     } catch (error) {
         console.error("Erro ao listar solicitações avulsas:", error);
         return reply.status(500).send({ error: "Erro interno do servidor" });
@@ -603,8 +603,8 @@ export async function cancelarSolicitacaoAvulsa(request, reply) {
         });
 
         if (!solicitacao) {
-            return reply.status(404).send({ 
-                error: "Solicitação não encontrada ou não pode ser cancelada" 
+            return reply.status(404).send({
+                error: "Solicitação não encontrada ou não pode ser cancelada"
             });
         }
 
@@ -613,10 +613,10 @@ export async function cancelarSolicitacaoAvulsa(request, reply) {
             data: { status: 'CANCELADA' }
         });
 
-        return reply.status(200).send({ 
-            message: "Solicitação cancelada com sucesso" 
+        return reply.status(200).send({
+            message: "Solicitação cancelada com sucesso"
         });
-        
+
     } catch (error) {
         console.error("Erro ao cancelar solicitação avulsa:", error);
         return reply.status(500).send({ error: "Erro interno do servidor" });
